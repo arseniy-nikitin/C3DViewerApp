@@ -15,7 +15,7 @@
 1. **Clone the Repository:**
    ```
    git clone <repository-url>
-   cd C8_3DViewer_v1.0-1/src
+   cd C3DViewerApp/src
    ```
 
 2. **Build the Application:**
