@@ -1,0 +1,177 @@
+#include "../3DViewer/transform_obj.h"
+
+/*
+  PARSER TESTS
+*/
+
+#test test_check_parser
+  char *str = "../materials/obj_samples/cube.obj";
+  int err_code = 0;
+  vertexes_data vertex = {0};
+  lines_data lines = {0};
+  count points = {0};
+  float result[24] = {1.0, -1.0, -1.0, 1.0,  -1.0, 1.0,  -1.0, -1.0,
+                      1.0, -1.0, -1.0, -1.0, 1.0,  1.0,  -1.0, 1.0,
+                      1.0, 1.0,  -1.0, 1.0,  1.0,  -1.0, 1.0,  -1.0};
+
+  err_code = read_file(str, &vertex, &lines, &points);
+  ck_assert_int_eq(err_code, 0);
+  for (int i = 0; i < 24; ++i){
+    ck_assert_float_eq_tol(result[i], vertex.vertexes_list[i], 1e-06);
+  }
+  delete_struct(&vertex, &lines, &points);
+
+#test test_check_parser_err
+  char *str = "../materials/obj_samples/cub.obj";
+  int err_code = 0;
+  vertexes_data vertex = {0};
+  lines_data lines = {0};
+  count points = {0};
+  err_code = read_file(str, &vertex, &lines, &points);
+  ck_assert_int_eq(err_code, 1);
+  delete_struct(&vertex, &lines, &points);
+
+/*
+  AFFINE TESTS
+*/
+
+#test test_move_x
+  char *str = "../materials/obj_samples/cube.obj";
+  int err_code = 0;
+  vertexes_data vertex = {0};
+  lines_data lines = {0};
+  count points = {0};
+  float result[24] = {2.37, -1.0, -1.0, 2.37, -1.0, 1.0,  0.37, -1.0,
+                      1.0,  0.37, -1.0, -1.0, 2.37, 1.0,  -1.0, 2.37,
+                      1.0,  1.0,  0.37, 1.0,  1.0,  0.37, 1.0,  -1.0};
+
+  err_code = read_file(str, &vertex, &lines, &points);
+  move_x(&vertex, 1.37);
+  ck_assert_int_eq(err_code, 0);
+  for (int i = 0; i < 24; ++i){
+    ck_assert_float_eq_tol(result[i], vertex.vertexes_list[i], 1e-06);
+  }
+  delete_struct(&vertex, &lines, &points);
+
+#test test_move_y
+  char *str = "../materials/obj_samples/cube.obj";
+  int err_code = 0;
+  vertexes_data vertex = {0};
+  lines_data lines = {0};
+  count points = {0};
+  float result[24] = {1.0,  0.37, -1.0, 1.0,  0.37, 1.0,  -1.0, 0.37,
+                      1.0,  -1.0, 0.37, -1.0, 1.0,  2.37, -1.0, 1.0,
+                      2.37, 1.0,  -1.0, 2.37, 1.0,  -1.0, 2.37, -1.0};
+
+  err_code = read_file(str, &vertex, &lines, &points);
+  move_y(&vertex, 1.37);
+  ck_assert_int_eq(err_code, 0);
+  for (int i = 0; i < 24; ++i){
+    ck_assert_float_eq_tol(result[i], vertex.vertexes_list[i], 1e-06);
+  }
+  delete_struct(&vertex, &lines, &points);
+
+#test test_move_z
+  char *str = "../materials/obj_samples/cube.obj";
+  int err_code = 0;
+  vertexes_data vertex = {0};
+  lines_data lines = {0};
+  count points = {0};
+  float result[24] = {1.0,  -1.0, 0.37, 1.0,  -1.0, 2.37, -1.0, -1.0,
+                      2.37, -1.0, -1.0, 0.37, 1.0,  1.0,  0.37, 1.0,
+                      1.0,  2.37, -1.0, 1.0,  2.37, -1.0, 1.0,  0.37};
+
+  err_code = read_file(str, &vertex, &lines, &points);
+  move_z(&vertex, 1.37);
+  ck_assert_int_eq(err_code, 0);
+  for (int i = 0; i < 24; ++i){
+    ck_assert_float_eq_tol(result[i], vertex.vertexes_list[i], 1e-06);
+  }
+  delete_struct(&vertex, &lines, &points);
+
+#test test_rotate_x
+  char *str = "../materials/obj_samples/cube.obj";
+  int err_code = 0;
+  vertexes_data vertex = {0};
+  lines_data lines = {0};
+  count points = {0};
+  float angle = 16.7;
+  float result[24] = {1.0, -1.0, -1.0, 1.0,  -1.0, 1.0,  -1.0, -1.0,
+                      1.0, -1.0, -1.0, -1.0, 1.0,  1.0,  -1.0, 1.0,
+                      1.0, 1.0,  -1.0, 1.0,  1.0,  -1.0, 1.0,  -1.0};
+
+  err_code = read_file(str, &vertex, &lines, &points);
+  rotate_x(&vertex, angle);
+  float radian_angle = angle * S21_PI / 180;
+  ck_assert_int_eq(err_code, 0);
+  for (int i = 0; i < 24; i += 3){
+    float first_coordinate = result[i + 1];
+    float second_coordinate = result[i + 2];
+    ck_assert_float_eq_tol(vertex.vertexes_list[i + 1],
+                           (first_coordinate * cos(radian_angle) +
+                            second_coordinate * sin(radian_angle)),
+                           1e-06);
+    ck_assert_float_eq_tol(vertex.vertexes_list[i + 2],
+                           (first_coordinate * -sin(radian_angle) +
+                            second_coordinate * cos(radian_angle)),
+                           1e-06);
+  }
+  delete_struct(&vertex, &lines, &points);
+
+#test test_rotate_y
+  char *str = "../materials/obj_samples/cube.obj";
+  int err_code = 0;
+  vertexes_data vertex = {0};
+  lines_data lines = {0};
+  count points = {0};
+  float angle = 16.7;
+  float result[24] = {1.0, -1.0, -1.0, 1.0,  -1.0, 1.0,  -1.0, -1.0,
+                      1.0, -1.0, -1.0, -1.0, 1.0,  1.0,  -1.0, 1.0,
+                      1.0, 1.0,  -1.0, 1.0,  1.0,  -1.0, 1.0,  -1.0};
+
+  err_code = read_file(str, &vertex, &lines, &points);
+  rotate_y(&vertex, angle);
+  float radian_angle = angle * S21_PI / 180;
+  ck_assert_int_eq(err_code, 0);
+  for (int i = 1; i < 24; i += 3){
+    float first_coordinate = result[i - 1];
+    float second_coordinate = result[i + 1];
+    ck_assert_float_eq_tol(vertex.vertexes_list[i - 1],
+                           (first_coordinate * cos(radian_angle) +
+                            second_coordinate * sin(radian_angle)),
+                           1e-06);
+    ck_assert_float_eq_tol(vertex.vertexes_list[i + 1],
+                           (first_coordinate * -sin(radian_angle) +
+                            second_coordinate * cos(radian_angle)),
+                           1e-06);
+  }
+  delete_struct(&vertex, &lines, &points);
+
+#test test_rotate_z
+  char *str = "../materials/obj_samples/cube.obj";
+  int err_code = 0;
+  vertexes_data vertex = {0};
+  lines_data lines = {0};
+  count points = {0};
+  float angle = 16.7;
+  float result[24] = {1.0, -1.0, -1.0, 1.0,  -1.0, 1.0,  -1.0, -1.0,
+                      1.0, -1.0, -1.0, -1.0, 1.0,  1.0,  -1.0, 1.0,
+                      1.0, 1.0,  -1.0, 1.0,  1.0,  -1.0, 1.0,  -1.0};
+
+  err_code = read_file(str, &vertex, &lines, &points);
+  rotate_z(&vertex, angle);
+  float radian_angle = angle * S21_PI / 180;
+  ck_assert_int_eq(err_code, 0);
+  for (int i = 2; i < 24; i += 3){
+    float first_coordinate = result[i - 2];
+    float second_coordinate = result[i - 1];
+    ck_assert_float_eq_tol(vertex.vertexes_list[i - 2],
+                           (first_coordinate * cos(radian_angle) +
+                            second_coordinate * sin(radian_angle)),
+                           1e-06);
+    ck_assert_float_eq_tol(vertex.vertexes_list[i - 1],
+                           (first_coordinate * -sin(radian_angle) +
+                            second_coordinate * cos(radian_angle)),
+                           1e-06);
+  }
+  delete_struct(&vertex, &lines, &points);
